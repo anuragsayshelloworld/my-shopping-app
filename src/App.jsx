@@ -67,69 +67,80 @@ export default function App() {
       unit: "kg"
     }
   ];
- useEffect(()=>{
-  setTimeout(()=>{
-    setLoading(false);
-  },2000);
- })
+
+  // Simulate loading delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleAddToCart = (productId) => {
     setCartCount(prev => prev + 1);
-    setProductCounts(prev => ({
-      ...prev,
-      [productId]: (prev[productId] || 0) + 1
-    }));
-  localStorage.setItem("cart", JSON.stringify(productCounts));  
+    setProductCounts(prev => {
+      const updatedCounts = {
+        ...prev,
+        [productId]: (prev[productId] || 0) + 1
+      };
+      localStorage.setItem("cart", JSON.stringify(updatedCounts));
+      return updatedCounts;
+    });
   };
 
-  useEffect(()=>{
-  const cart = JSON.parse(localStorage.getItem("cart")) || '';
-  setProductCounts(cart);
-  const cartCount = Object.values(cart).reduce((sum, count) => sum + count, 0);
-  setCartCount(cartCount); 
-  },[])
+  // Load cart from localStorage
+  useEffect(() => {
+    const cart = JSON.parse(localStorage.getItem("cart")) || {};
+    setProductCounts(cart);
+    const totalCount = Object.values(cart).reduce((sum, count) => sum + count, 0);
+    setCartCount(totalCount);
+  }, []);
 
-  const onCartClick = () =>{
+  // When cart icon clicked
+  const onCartClick = (e) => {
+    e.stopPropagation(); // Prevent click bubbling to body
     setShowCart(true);
-  }
+  };
+
+  // Close modal if clicking outside
+  const onBackdropClick = () => {
+    setShowCart(false);
+  };
 
   return (
-<>
-{showCart && <CartModal onClose={() => setShowCart(false)} cartCount={cartCount}/>}
-
-
-
-
-
-
-
-
-
-    <div className="min-h-screen bg-white">
-      {/* Navbar remains the same */}
-      <Navbar cartCount={cartCount} onCartClick={onCartClick}/>
-
-      {/* Hero + Products Combined */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-start">
-          
-          {/* Left Side - Hero */}
-          <HeroSection />
-          {/* Right Side - Products */}
-        <ProductGrid
-        loading={loading} 
-        products={products} 
-        productCounts ={productCounts} 
-        handleAddToCart={handleAddToCart}/>
+    <>
+      {showCart && (
+        <div
+          className="fixed inset-0 z-[999999] bg-black/0"
+          onClick={onBackdropClick}
+        >
+          <div onClick={(e) => e.stopPropagation()}>
+            <CartModal 
+            onClose={() => setShowCart(false)} 
+            cartCount={cartCount}
+            setCartCount={setCartCount} 
+            products={products}/>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Footer remains the same */}
-      <Footer />
-    </div>
+      <div className="min-h-screen bg-white">
+        <Navbar cartCount={cartCount} onCartClick={onCartClick} />
+
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 items-start">
+            <HeroSection />
+            <ProductGrid
+              loading={loading}
+              products={products}
+              productCounts={productCounts}
+              handleAddToCart={handleAddToCart}
+            />
+          </div>
+        </div>
+
+        <Footer />
+      </div>
     </>
   );
 }
-
-
-
-

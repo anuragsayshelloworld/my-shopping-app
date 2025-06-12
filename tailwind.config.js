@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       animation: {
-        slideDownSlow: 'slideDownSlow 3s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+        slideDownSlow: 'slideDownSlow 1s cubic-bezier(0.4, 0, 0.2, 1) forwards',
       },
       keyframes: {
         slideDownSlow: {
